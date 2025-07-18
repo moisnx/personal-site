@@ -48,7 +48,7 @@ const router = createRouter({
 });
 
 // Global navigation guard to update title
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, _from, next) => {
   const title =
     typeof to.meta.title === "string" ? to.meta.title : "moisxn@nerv:~$ whoami";
   document.title = title;
