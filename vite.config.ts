@@ -5,6 +5,7 @@ import code from "@yankeeinlondon/code-builder";
 import link from "@yankeeinlondon/link-builder";
 import meta from "@yankeeinlondon/meta-builder";
 import githubAlerts from "markdown-it-github-alerts";
+import vercel from "vite-plugin-vercel";
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -12,6 +13,7 @@ export default defineConfig({
     allowedHosts: [".ngrok-free.app"],
   },
   plugins: [
+    vercel(),
     vue({
       include: [/\.vue$/, /\.md$/], // <--
     }),
