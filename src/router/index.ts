@@ -18,12 +18,18 @@ const routes = [
     path: "/blog/",
     name: "Blog",
     component: () => import("../views/Blog.vue"),
+    meta: {
+      title: "Blog",
+    },
   },
 
   {
     path: "/gallery",
     name: "Gallery",
     component: () => import("../components/Gallery.vue"),
+    meta: {
+      title: "Gallery",
+    },
   },
   {
     path: "/blog/:slug",

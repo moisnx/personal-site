@@ -1,29 +1,82 @@
 <template>
-  <!-- Background -->
+  <!-- Your existing template content -->
   <div class="eva-background">
     <img src="/eva-image-bg.jpg" alt="EVA Unit" class="eva-image active" />
     <div class="image-overlay"></div>
   </div>
 
-  <!-- Grid overlay -->
   <div class="grid-overlay"></div>
-
-  <!-- Navigation -->
   <Navbar />
 
   <div class="container">
-    <!-- Blog Post -->
     <article class="blog-post" v-if="post">
-      <!-- Header -->
+      <!-- Enhanced Head with comprehensive meta tags -->
+      <Head>
+        <!-- Basic Meta Tags -->
+        <title>{{ seoTitle }}</title>
+        <meta name="description" :content="seoDescription" />
+        <meta name="keywords" :content="seoKeywords" />
+        <meta
+          name="author"
+          :content="post.author || 'Neural Bridge Developer'"
+        />
+        <meta name="robots" content="index, follow" />
+        <meta name="language" content="en" />
+
+        <!-- Article-specific Open Graph -->
+        <meta property="article:published_time" :content="post.date" />
+        <meta
+          property="article:modified_time"
+          :content="post.updatedDate || post.date"
+        />
+
+        <meta
+          property="article:section"
+          :content="post.category || 'Technology'"
+        />
+        <meta
+          property="article:tag"
+          v-for="tag in post.tags"
+          :key="tag"
+          :content="tag"
+        />
+
+        <!-- Twitter Card Meta Tags -->
+
+        <!-- Technical Meta Tags -->
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+        <!-- Canonical URL -->
+        <link rel="canonical" :href="canonicalUrl" />
+
+        <!-- JSON-LD Structured Data -->
+
+        <!-- Additional SEO Meta Tags -->
+        <meta name="theme-color" content="#00ff41" />
+        <meta name="msapplication-TileColor" content="#00ff41" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta
+          name="apple-mobile-web-app-status-bar-style"
+          content="black-translucent"
+        />
+
+        <!-- Reading Time & Word Count (for analytics) -->
+        <meta name="reading-time" :content="post.readTime" />
+        <meta name="word-count" :content="post.wordCount || 'N/A'" />
+      </Head>
+
+      <!-- Rest of your existing template -->
       <header class="post-header">
         <div class="post-meta">
-          <time class="post-date">{{ formatDate(post.date) }}</time>
+          <time class="post-date" :datetime="post.date">{{
+            formatDate(post.date)
+          }}</time>
           <span class="post-reading-time">{{ post.readTime }}</span>
         </div>
         <h1 class="post-title">{{ post.title }}</h1>
-        <p class="post-subtitle">
-          {{ post.excerpt }}
-        </p>
+        <p class="post-subtitle">{{ post.excerpt }}</p>
         <div class="post-tags">
           <span
             v-for="(tag, index) in post.tags"
@@ -34,66 +87,144 @@
         </div>
       </header>
 
-      <!-- Featured Image -->
       <div class="post-image-container">
-        <img :src="post.cover" alt="EVA Unit" class="post-image" />
-        <div class="image-caption">
-          {{ post.coverAlt }}
-        </div>
+        <img :src="post.cover" :alt="post.coverAlt" class="post-image" />
+        <div class="image-caption">{{ post.coverAlt }}</div>
       </div>
 
-      <!-- Content -->
       <div class="post-content">
         <section class="content-section">
           <component :is="postComponent" />
         </section>
-
-        <!-- Author Info -->
-        <!-- <div class="author-info">
-          <div class="author-avatar">
-            <div class="avatar-placeholder">DEV</div>
-          </div>
-          <div class="author-details">
-            <h4 class="author-name">Neural Bridge Developer</h4>
-            <p class="author-bio">
-              Exploring the intersection of human consciousness and digital
-              architecture. Building bridges between the physical and digital
-              worlds.
-            </p>
-          </div>
-        </div> -->
-
-        <!-- Navigation -->
-        <!-- <nav class="post-navigation">
-          <div class="nav-item nav-prev">
-            <span class="nav-label">Previous</span>
-            <span class="nav-title">The Angel of Async Programming</span>
-          </div>
-          <div class="nav-item nav-next">
-            <span class="nav-label">Next</span>
-            <span class="nav-title">Building EVA Units with Vue 3</span>
-          </div>
-        </nav> -->
       </div>
     </article>
   </div>
 </template>
 
 <script setup>
-import { onMounted, ref } from "vue";
+import { onMounted, ref, computed } from "vue";
 import Navbar from "../components/Navbar.vue";
 import { getPostBySlug } from "../posts";
 import { useRoute } from "vue-router";
-import "../styles/prism-theme.css"; // you can change
+import "../styles/prism-theme.css";
 import { formatDate } from "../lib/utils";
 import prism from "prismjs";
 import "markdown-it-github-alerts/styles/github-colors-light.css";
 import "markdown-it-github-alerts/styles/github-colors-dark-media.css";
 import "markdown-it-github-alerts/styles/github-base.css";
+import { Head } from "@unhead/vue/components";
 
 const route = useRoute();
 const post = ref();
 const postComponent = ref();
+
+// SEO Configuration
+const siteUrl = "https://yourdomain.com"; // Replace with your actual domain
+const twitterHandle = "@yourtwitterhandle"; // Replace with your Twitter handle
+const siteName = "Neural Bridge Blog";
+
+// Computed properties for SEO
+const seoTitle = computed(() => {
+  if (!post.value) return siteName;
+  return post.value.title.length > 60
+    ? `${post.value.title.substring(0, 57)}...`
+    : post.value.title;
+});
+
+const seoDescription = computed(() => {
+  if (!post.value)
+    return "Exploring the intersection of human consciousness and digital architecture.";
+
+  let description = post.value.excerpt || post.value.description || "";
+
+  // Ensure description is between 150-160 characters for optimal SEO
+  if (description.length > 160) {
+    description = description.substring(0, 157) + "...";
+  } else if (description.length < 120) {
+    // If too short, try to expand with additional context
+    const additionalContext =
+      " - Neural Bridge Blog explores technology and digital innovation.";
+    if (description.length + additionalContext.length <= 160) {
+      description += additionalContext;
+    }
+  }
+
+  return description;
+});
+
+const seoKeywords = computed(() => {
+  if (!post.value || !post.value.tags) return "";
+
+  // Combine tags with some general keywords
+  const generalKeywords = [
+    "technology",
+    "programming",
+    "web development",
+    "neural bridge",
+  ];
+  const allKeywords = [...post.value.tags, ...generalKeywords];
+
+  // Remove duplicates and join
+  return [...new Set(allKeywords)].join(", ");
+});
+
+const canonicalUrl = computed(() => {
+  if (!post.value) return siteUrl;
+  return `${siteUrl}/blog/${route.params.slug}`;
+});
+
+const absoluteImageUrl = computed(() => {
+  if (!post.value || !post.value.cover) {
+    return `${siteUrl}/default-og-image.jpg`; // Fallback image
+  }
+
+  // Convert relative URLs to absolute
+  if (post.value.cover.startsWith("http")) {
+    return post.value.cover;
+  }
+
+  return `${siteUrl}${post.value.cover}`;
+});
+
+// Structured Data (JSON-LD)
+const structuredData = computed(() => {
+  if (!post.value) return "";
+
+  const data = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: post.value.title,
+    description: seoDescription.value,
+    image: absoluteImageUrl.value,
+    author: {
+      "@type": "Person",
+      name: post.value.author || "Neural Bridge Developer",
+      url: siteUrl,
+    },
+    publisher: {
+      "@type": "Organization",
+      name: siteName,
+      url: siteUrl,
+      logo: {
+        "@type": "ImageObject",
+        url: `${siteUrl}/logo.png`,
+      },
+    },
+    datePublished: post.value.date,
+    dateModified: post.value.updatedDate || post.value.date,
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": canonicalUrl.value,
+    },
+    keywords: post.value.tags?.join(", ") || "",
+    articleSection: post.value.category || "Technology",
+    inLanguage: "en-US",
+    wordCount: post.value.wordCount || 0,
+    timeRequired: post.value.readTime || "5 min read",
+  };
+
+  return JSON.stringify(data);
+});
 
 // Background images
 const evaImages = [
@@ -109,10 +240,25 @@ onMounted(async () => {
   post.value = getPostBySlug(route.params.slug);
 
   if (post.value) {
-    // Since you're using eager loading, component is already the loaded module
     postComponent.value = post.value.component;
+
+    // Calculate word count if not provided
+    if (!post.value.wordCount && postComponent.value) {
+      calculateWordCount();
+    }
   }
 });
+
+// Calculate word count for SEO
+function calculateWordCount() {
+  // This is a basic implementation - you might want to improve it
+  const content = document.querySelector(".post-content");
+  if (content) {
+    const text = content.textContent || content.innerText || "";
+    const wordCount = text.trim().split(/\s+/).length;
+    post.value.wordCount = wordCount;
+  }
+}
 
 // Background image rotation
 function startImageRotation() {
@@ -163,7 +309,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 </script>
-
 <style>
 /* Import existing styles */
 :root {

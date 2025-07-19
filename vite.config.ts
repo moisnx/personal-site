@@ -6,6 +6,7 @@ import link from "@yankeeinlondon/link-builder";
 import meta from "@yankeeinlondon/meta-builder";
 import githubAlerts from "markdown-it-github-alerts";
 import vercel from "vite-plugin-vercel";
+import Pages from "vite-plugin-pages";
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -18,6 +19,7 @@ export default defineConfig({
         },
       ],
     }),
+    Pages(),
     vue({
       include: [/\.vue$/, /\.md$/], // <--
     }),

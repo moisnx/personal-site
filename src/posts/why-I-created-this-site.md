@@ -6,11 +6,14 @@ cover: "/gallery/sunset-sky-blog.jpg"
 coverAlt: "Abstract digital landscape representing the intersection of human consciousness and technology"
 readTime: "4 min"
 excerpt: "After years of scattered thoughts across platforms, I built this site to explore the intersection of human consciousness and digital architecture—a space where philosophy meets code."
-author: "Neural Bridge Developer"
+author: "Moi"
 authorBio: "Exploring the intersection of human consciousness and digital architecture. Building bridges between the physical and digital worlds."
 description: "The story behind creating a personal blog focused on philosophy, technology, and the human experience in our digital age."
 keywords: "personal blog, web development, Vue.js, philosophy, technology, digital garden, consciousness"
 
+meta:
+  - name: My Cool App
+    description: cool things happen to people who use cool apps
 gallery:
   id: "sunset-sky-blog"
   images:

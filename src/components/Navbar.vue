@@ -1,30 +1,23 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from "vue";
+import { useRouter } from "vue-router";
+
+const router = useRouter();
+// const route = useRoute();
 
 defineProps<{
-  variant?: string;
+  variant?: "home" | "blog" | "gallery";
 }>();
 
-const activeSection = ref("experience");
 const isScrolled = ref(false);
 const isMobileMenuOpen = ref(false);
 
-const sections = [
-  { id: "experience", label: "experience" },
-  { id: "skills", label: "skills" },
-  { id: "projects", label: "projects" },
-  { id: "blog", label: "blog" },
-  { id: "contact", label: "contact" },
-];
-
 const handleScroll = () => {
-  isScrolled.value = window.scrollY > 50;
+  isScrolled.value = window.scrollY > 20;
 };
 
 const scrollToSection = (sectionId: string) => {
-  activeSection.value = sectionId;
   isMobileMenuOpen.value = false;
-
   const element = document.getElementById(sectionId);
   if (element) {
     element.scrollIntoView({
@@ -38,25 +31,22 @@ const toggleMobileMenu = () => {
   isMobileMenuOpen.value = !isMobileMenuOpen.value;
 };
 
+const handleNavClick = (target: string, variant?: string) => {
+  if (variant === "home") {
+    // On home page, scroll to sections
+    if (target === "blog") {
+      scrollToSection("blog");
+    } else if (target === "gallery") {
+      router.push("/gallery");
+    }
+  } else {
+    // On other pages, navigate to routes
+    router.push(`/${target}`);
+  }
+};
+
 onMounted(() => {
   window.addEventListener("scroll", handleScroll);
-
-  // Intersection Observer for active section tracking
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          activeSection.value = entry.target.id;
-        }
-      });
-    },
-    { threshold: 0.3 }
-  );
-
-  sections.forEach((section) => {
-    const element = document.getElementById(section.id);
-    if (element) observer.observe(element);
-  });
 });
 
 onUnmounted(() => {
@@ -65,95 +55,45 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <!-- Home variant with full navigation -->
-  <nav
-    class="nav"
-    :class="{
-      'nav--scrolled': isScrolled,
-      'nav--visible': variant?.includes('home'),
-    }"
-    v-if="variant?.includes('home')"
-  >
-    <div class="nav-content">
-      <!-- Logo with glitch effect -->
-      <div class="nav-logo-container">
-        <a href="/" class="nav-logo">
-          <span class="nav-logo-text" data-text="moisxn@nerv:~$">
-            moisxn@nerv:~$
-          </span>
-        </a>
-      </div>
+  <nav class="nav" :class="{ 'nav--scrolled': isScrolled }">
+    <div class="nav-container">
+      <!-- Logo -->
+      <a href="/" class="nav-logo">
+        <span class="nav-logo-text" data-text="moisxn@nerv:~$">
+          moisxn@nerv:~$
+        </span>
+      </a>
 
       <!-- Desktop Navigation -->
       <div class="nav-links">
-        <button
-          v-for="section in sections"
-          :key="section.id"
-          class="nav-link"
-          :class="{ 'nav-link--active': activeSection === section.id }"
-          @click="scrollToSection(section.id)"
-        >
-          <span class="nav-link-text">{{ section.label }}</span>
-          <span class="nav-link-indicator"></span>
+        <button class="nav-link" @click="handleNavClick('gallery', variant)">
+          Gallery
+        </button>
+        <button class="nav-link" @click="handleNavClick('blog', variant)">
+          Blog
         </button>
       </div>
 
       <!-- Mobile Menu Button -->
       <button
-        class="nav-mobile-toggle"
+        class="nav-toggle"
         @click="toggleMobileMenu"
-        :class="{ 'nav-mobile-toggle--active': isMobileMenuOpen }"
+        :class="{ 'nav-toggle--active': isMobileMenuOpen }"
+        aria-label="Toggle menu"
       >
-        <span></span>
         <span></span>
         <span></span>
       </button>
     </div>
 
-    <!-- Mobile Menu Overlay -->
-    <div
-      class="nav-mobile-menu"
-      :class="{ 'nav-mobile-menu--open': isMobileMenuOpen }"
-    >
-      <div class="nav-mobile-content">
-        <button
-          v-for="(section, index) in sections"
-          :key="section.id"
-          class="nav-mobile-link"
-          :class="{ 'nav-mobile-link--active': activeSection === section.id }"
-          @click="scrollToSection(section.id)"
-          :style="{ animationDelay: `${index * 0.1}s` }"
-        >
-          <span class="nav-mobile-link-text">{{ section.label }}</span>
-        </button>
-      </div>
-    </div>
-  </nav>
-
-  <!-- Blog variant with minimal navigation -->
-  <nav
-    class="nav nav--minimal nav--visible"
-    :class="{ 'nav--scrolled': isScrolled }"
-    v-else
-  >
-    <div class="nav-content">
-      <div class="nav-logo-container">
-        <a href="/" class="nav-logo">
-          <span class="nav-logo-text" data-text="moisxn@nerv:~$">
-            moisxn@nerv:~$
-          </span>
-        </a>
-      </div>
-      <div class="nav-links">
-        <router-link class="nav-link nav-link--active" to="/gallery">
-          <span class="nav-link-text">Gallery</span>
-          <span class="nav-link-indicator"></span>
-        </router-link>
-        <router-link class="nav-link nav-link--active" to="/blog">
-          <span class="nav-link-text">Blog</span>
-          <span class="nav-link-indicator"></span>
-        </router-link>
-      </div>
+    <!-- Mobile Menu -->
+    <div class="nav-menu" :class="{ 'nav-menu--open': isMobileMenuOpen }">
+      <button class="nav-menu-link" @click="handleNavClick('gallery', variant)">
+        Gallery
+      </button>
+      <button class="nav-menu-link" @click="handleNavClick('blog', variant)">
+        Blog
+      </button>
     </div>
   </nav>
 </template>
@@ -165,43 +105,33 @@ onUnmounted(() => {
   left: 0;
   right: 0;
   z-index: 100;
-  background: rgba(10, 10, 10, 0.85);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: rgba(10, 10, 10, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
-  transform: translateY(-100%);
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  will-change: transform;
-}
-
-.nav--visible {
-  transform: translateY(0);
+  transition: all 0.3s ease;
 }
 
 .nav--scrolled {
   background: rgba(10, 10, 10, 0.95);
-  box-shadow: 0 4px 20px rgba(0, 255, 65, 0.1);
+  box-shadow: 0 2px 20px rgba(0, 255, 65, 0.08);
 }
 
-.nav-content {
+.nav-container {
   max-width: 800px;
   margin: 0 auto;
-  padding: 0 2rem;
+  padding: 0 1.5rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
   height: 60px;
-  position: relative;
 }
 
-/* Logo with glitch effect */
-.nav-logo-container {
-  position: relative;
-}
-
+/* Logo */
 .nav-logo {
   font-family: "JetBrains Mono", monospace;
   font-weight: 600;
+  font-size: 0.95rem;
   color: var(--accent);
   text-decoration: none;
   position: relative;
@@ -209,12 +139,11 @@ onUnmounted(() => {
 }
 
 .nav-logo:hover {
-  text-shadow: 0 0 10px var(--accent);
+  text-shadow: 0 0 8px var(--accent);
 }
 
 .nav-logo-text {
   position: relative;
-  display: inline-block;
 }
 
 .nav-logo-text::before {
@@ -222,46 +151,36 @@ onUnmounted(() => {
   position: absolute;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
   color: var(--accent);
   opacity: 0;
-  animation: glitch 0.3s ease-in-out;
-  animation-play-state: paused;
-  clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%);
-  transform: translate(-2px, -2px);
-  text-shadow: 2px 0 #ff3333;
+  clip-path: polygon(0 0, 100% 0, 100% 50%, 0 50%);
+  transform: translate(-1px, -1px);
+  text-shadow: 1px 0 #ff3333;
+  transition: opacity 0.2s ease;
 }
 
 .nav-logo:hover .nav-logo-text::before {
-  animation-play-state: running;
+  opacity: 1;
+  animation: glitch 0.3s ease;
 }
 
 @keyframes glitch {
   0%,
   100% {
-    opacity: 0;
     transform: translate(0, 0);
   }
-  20% {
-    opacity: 1;
-    transform: translate(-2px, 2px);
+  25% {
+    transform: translate(-1px, 1px);
   }
-  40% {
-    opacity: 1;
-    transform: translate(2px, -2px);
+  50% {
+    transform: translate(1px, -1px);
   }
-  60% {
-    opacity: 1;
-    transform: translate(-2px, -2px);
-  }
-  80% {
-    opacity: 1;
-    transform: translate(2px, 2px);
+  75% {
+    transform: translate(-1px, -1px);
   }
 }
 
-/* Desktop Navigation Links */
+/* Desktop Links */
 .nav-links {
   display: flex;
   gap: 2rem;
@@ -273,211 +192,139 @@ onUnmounted(() => {
   border: none;
   color: var(--muted);
   font-size: 0.9rem;
-  cursor: pointer;
-  position: relative;
-  padding: 0.5rem 1rem;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   font-family: "JetBrains Mono", monospace;
-  overflow: hidden;
+  cursor: pointer;
+  padding: 0.5rem 0;
+  position: relative;
+  transition: color 0.3s ease;
 }
 
-.nav-link::before {
+.nav-link::after {
   content: "";
   position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(0, 255, 65, 0.1),
-    transparent
-  );
-  transition: left 0.5s ease;
-}
-
-.nav-link:hover::before {
-  left: 100%;
-}
-
-.nav-link:hover .nav-link-text {
-  color: var(--accent);
-  text-shadow: 0 0 5px var(--accent);
-}
-
-.nav-link--active .nav-link-text {
-  color: var(--accent);
-}
-
-.nav-link-text {
-  position: relative;
-  z-index: 2;
-  transition: all 0.3s ease;
-}
-
-.nav-link-indicator {
-  position: absolute;
   bottom: 0;
-  left: 50%;
+  left: 0;
   width: 0;
-  height: 2px;
+  height: 1px;
   background: var(--accent);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  transform: translateX(-50%);
+  transition: width 0.3s ease;
 }
 
-.nav-link--active .nav-link-indicator {
-  width: 80%;
-  box-shadow: 0 0 10px var(--accent);
+.nav-link:hover {
+  color: var(--accent);
 }
 
-.nav-link:hover .nav-link-indicator {
-  width: 60%;
+.nav-link:hover::after {
+  width: 100%;
 }
 
-/* Mobile Menu Button */
-.nav-mobile-toggle {
+/* Mobile Toggle */
+.nav-toggle {
   display: none;
   flex-direction: column;
   background: none;
   border: none;
   cursor: pointer;
-  padding: 0.5rem;
+  padding: 0.25rem;
   gap: 4px;
-  z-index: 101;
 }
 
-.nav-mobile-toggle span {
-  width: 20px;
+.nav-toggle span {
+  width: 18px;
   height: 2px;
   background: var(--accent);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  transform-origin: center;
+  transition: all 0.3s ease;
+  border-radius: 1px;
 }
 
-.nav-mobile-toggle--active span:nth-child(1) {
-  transform: rotate(45deg) translate(6px, 6px);
+.nav-toggle--active span:first-child {
+  transform: rotate(45deg) translate(4px, 4px);
 }
 
-.nav-mobile-toggle--active span:nth-child(2) {
-  opacity: 0;
+.nav-toggle--active span:last-child {
+  transform: rotate(-45deg) translate(4px, -4px);
 }
 
-.nav-mobile-toggle--active span:nth-child(3) {
-  transform: rotate(-45deg) translate(6px, -6px);
-}
-
-/* Mobile Menu Overlay */
-.nav-mobile-menu {
-  position: fixed;
-  top: 0;
+/* Mobile Menu */
+.nav-menu {
+  position: absolute;
+  top: 100%;
   left: 0;
-  width: 100%;
-  height: 100vh;
+  right: 0;
   background: rgba(10, 10, 10, 0.98);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 1rem 0;
+  transform: translateY(-10px);
   opacity: 0;
   visibility: hidden;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: 99;
+  transition: all 0.3s ease;
 }
 
-.nav-mobile-menu--open {
+.nav-menu--open {
+  transform: translateY(0);
   opacity: 1;
   visibility: visible;
 }
 
-.nav-mobile-content {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-  text-align: center;
-}
-
-.nav-mobile-link {
+.nav-menu-link {
+  display: block;
+  width: 100%;
   background: none;
   border: none;
   color: var(--muted);
-  font-size: 1.2rem;
   font-family: "JetBrains Mono", monospace;
+  font-size: 0.9rem;
+  padding: 0.75rem 1.5rem;
+  text-align: left;
   cursor: pointer;
-  padding: 1rem 2rem;
-  position: relative;
   transition: all 0.3s ease;
-  opacity: 0;
-  transform: translateY(20px);
-  animation: slideInUp 0.6s ease forwards;
 }
 
-.nav-mobile-link:hover .nav-mobile-link-text,
-.nav-mobile-link--active .nav-mobile-link-text {
+.nav-menu-link:hover {
   color: var(--accent);
-  text-shadow: 0 0 10px var(--accent);
+  background: rgba(0, 255, 65, 0.05);
 }
 
-.nav-mobile-link-text {
-  transition: all 0.3s ease;
-}
-
-@keyframes slideInUp {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Responsive Design */
+/* Responsive */
 @media (max-width: 768px) {
-  .nav-content {
+  .nav-container {
     padding: 0 1rem;
+    height: 50px;
   }
 
   .nav-links {
     display: none;
   }
 
-  .nav-mobile-toggle {
+  .nav-toggle {
     display: flex;
   }
 
-  .nav--minimal .nav-links {
-    display: flex;
-  }
-
-  .nav--minimal .nav-mobile-toggle {
-    display: none;
+  .nav-logo {
+    font-size: 0.85rem;
   }
 }
 
 @media (max-width: 480px) {
-  .nav-content {
-    height: 50px;
+  .nav-container {
+    height: 45px;
   }
 
   .nav-logo {
-    font-size: 0.9rem;
+    font-size: 0.8rem;
   }
 }
 
-/* Smooth scroll behavior */
-html {
-  scroll-behavior: smooth;
+/* Performance */
+.nav {
+  will-change: background-color, box-shadow;
 }
 
-/* Performance optimizations */
 .nav-link,
 .nav-logo,
-.nav-mobile-toggle {
+.nav-toggle {
   -webkit-tap-highlight-color: transparent;
-}
-
-.nav {
-  -webkit-transform: translateZ(0);
-  transform: translateZ(0);
 }
 </style>
