@@ -9,11 +9,15 @@ import vercel from "vite-plugin-vercel";
 
 // https://vite.dev/config/
 export default defineConfig({
-  server: {
-    allowedHosts: [".ngrok-free.app"],
-  },
   plugins: [
-    vercel(),
+    vercel({
+      rewrites: [
+        {
+          source: "/(.*)",
+          destination: "/index.html",
+        },
+      ],
+    }),
     vue({
       include: [/\.vue$/, /\.md$/], // <--
     }),
