@@ -1,16 +1,9 @@
 // src/posts/index.js
-
-// Automatically import all markdown files
 const modules = import.meta.glob("./*.md", { eager: true });
 
 export const posts = Object.entries(modules).map(([path, module]) => {
-  // More robust slug extraction
   const slug = path.replace(/^\.\//, "").replace(/\.md$/, "");
-
-  // Fix: Assert module as any to avoid type error for unknown
   const frontmatter = (module as any).frontmatter || {};
-
-  console.log("Processing file:", path, "-> slug:", slug); // Debug log
 
   return {
     slug,
@@ -21,7 +14,8 @@ export const posts = Object.entries(modules).map(([path, module]) => {
     cover: frontmatter.cover || "",
     gallery: frontmatter.gallery || "",
     readTime: frontmatter.readTime || "",
-    component: () => import(path),
+    // Type assertion for the module
+    component: (module as any).default || module,
   };
 });
 

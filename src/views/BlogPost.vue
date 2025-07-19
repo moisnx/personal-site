@@ -107,8 +107,11 @@ onMounted(async () => {
   startImageRotation();
   setupReadingProgress();
   post.value = getPostBySlug(route.params.slug);
-  const module = await post.value.component();
-  postComponent.value = module.default;
+
+  if (post.value) {
+    // Since you're using eager loading, component is already the loaded module
+    postComponent.value = post.value.component;
+  }
 });
 
 // Background image rotation
